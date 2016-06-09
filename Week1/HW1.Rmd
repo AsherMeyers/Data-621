@@ -29,7 +29,7 @@ confint(PlaybillFit, level = 0.95)
 predict(PlaybillFit, data.frame(LastWeek = 400000), interval = "predict")
 ```
 
-a) Ys, 1 is a plausible value for B1, because 1 is in the 95% CI
+a) Yes, 1 is a plausible value for B1, because 1 is in the 95% CI
 
 b) We fail to reject the null, because $10k is in the 95% CI for the slope.
 
