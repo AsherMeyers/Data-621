@@ -1,0 +1,132 @@
+---
+title: 'Data 621, HW 1: Moneyball'
+author: "Asher Meyers"
+date: "June 10, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+trainingDataRaw <- read.csv("C:/Users/asher/Documents/Classes/CUNY/DATA 621/HW1/moneyball-training-data.csv")
+View(trainingData)
+
+#Scatter plots of positive correlates
+pairs(~TARGET_WINS + TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_HBP + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO, trainingData, lower.panel = NULL)
+
+#Scatterplots of negative correlates
+pairs(~TARGET_WINS + TEAM_BATTING_SO +TEAM_BASERUN_CS + TEAM_FIELDING_E + TEAM_PITCHING_BB + TEAM_PITCHING_H + TEAM_PITCHING_HR, trainingData, lower.panel = NULL)
+
+#Use trainingData without TEAM_BATTING_HBP and TEAM_BASERUN_CS because they have 2085 and 772 missing values, respectively.
+
+trainingData <- trainingDataRaw[,c(-1, -10, -11)]
+
+#Include all variables, and progressively remove non-significant ones
+
+Model1 <- lm(TARGET_WINS ~ + TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO + TEAM_BATTING_SO + TEAM_FIELDING_E + TEAM_PITCHING_BB + TEAM_PITCHING_H + TEAM_PITCHING_HR, trainingData)
+summary(Model1)
+
+#Remove TEAM_PITCHING_HR
+Model2 <- lm(TARGET_WINS ~ + TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO + TEAM_BATTING_SO + TEAM_FIELDING_E + TEAM_PITCHING_BB + TEAM_PITCHING_H, trainingData)
+summary(Model2)
+
+#Remove TEAM_BATTING_SO
+Model3 <- lm(TARGET_WINS ~ + TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_PITCHING_BB + TEAM_PITCHING_H, trainingData)
+summary(Model3)
+
+#Remove TEAM_BATTING_H
+Model4 <- lm(TARGET_WINS ~ TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_PITCHING_BB + TEAM_PITCHING_H, trainingData)
+summary(Model4)
+
+
+
+plot(Model4)
+
+
+```
+
+
+```{r}
+#Creating an imputed variable for TEAM_BATTING_HBP
+
+HBPModel <- lm(TEAM_BATTING_HBP ~ + TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO + TEAM_BATTING_SO +TEAM_BASERUN_CS + TEAM_FIELDING_E + TEAM_PITCHING_BB + TEAM_PITCHING_H + TEAM_PITCHING_HR, trainingDataRaw)
+summary(HBPModel)
+
+#No correlation.
+
+
+#Create imputed variable for TEAM_BASERUN_CS
+CSModel <- lm(TEAM_BASERUN_CS ~ + TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_HBP + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO + TEAM_BATTING_SO + TEAM_FIELDING_E + TEAM_PITCHING_BB + TEAM_PITCHING_H + TEAM_PITCHING_HR, trainingDataRaw)
+summary(CSModel)
+```
+
+
+
+```{r}
+#Correlation Matrix
+library('corrplot')
+
+M <- round(cor(trainingData),2)
+M
+View(M)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Stepwise regression using all predictors initially:
+
+```{ r}
+#Include all variables, and progressively remove non-significant ones
+
+Model1 <- lm(TARGET_WINS ~ + TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_HBP + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO + TEAM_BATTING_SO +TEAM_BASERUN_CS + TEAM_FIELDING_E + TEAM_PITCHING_BB + TEAM_PITCHING_H + TEAM_PITCHING_HR, trainingData)
+summary(FullModel)
+
+#Remove TEAM_BATTING_SO
+Model2 <- lm(TARGET_WINS ~ + TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_HBP + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO +TEAM_BASERUN_CS + TEAM_FIELDING_E + TEAM_PITCHING_BB + TEAM_PITCHING_H + TEAM_PITCHING_HR, trainingData)
+summary(Model2)
+
+#Remove TEAM_BASERUN_CS
+Model3 <- lm(TARGET_WINS ~ + TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_HBP + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_PITCHING_BB + TEAM_PITCHING_H + TEAM_PITCHING_HR, trainingData)
+summary(Model3)
+
+#Remove TEAM_BATTING_HR
+Model4 <- lm(TARGET_WINS ~ + TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_BB + TEAM_BATTING_HBP + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_PITCHING_BB + TEAM_PITCHING_H + TEAM_PITCHING_HR, trainingData)
+summary(Model4)
+
+#Remove TEAM_BATTING_2B
+Model5 <- lm(TARGET_WINS ~ + TEAM_BATTING_H + TEAM_BATTING_3B + TEAM_BATTING_BB + TEAM_BATTING_HBP + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_PITCHING_BB + TEAM_PITCHING_H + TEAM_PITCHING_HR, trainingData)
+summary(Model5)
+
+#Remove TEAM_PITCHING_H
+Model6 <- lm(TARGET_WINS ~ + TEAM_BATTING_H + TEAM_BATTING_3B + TEAM_BATTING_BB + TEAM_BATTING_HBP + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_PITCHING_BB + TEAM_PITCHING_HR, trainingData)
+summary(Model6)
+
+#Remove TEAM_PITCHING_BB
+Model7 <- lm(TARGET_WINS ~ + TEAM_BATTING_H + TEAM_BATTING_3B + TEAM_BATTING_BB + TEAM_BATTING_HBP + TEAM_BASERUN_SB + TEAM_FIELDING_DP + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_PITCHING_HR, trainingData)
+summary(Model7)
+
+#Remove TEAM_BASERUN_SB
+Model8 <- lm(TARGET_WINS ~ + TEAM_BATTING_H + TEAM_BATTING_3B + TEAM_BATTING_BB + TEAM_BATTING_HBP + TEAM_FIELDING_DP + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_PITCHING_HR, trainingData)
+summary(Model8)
+
+```
