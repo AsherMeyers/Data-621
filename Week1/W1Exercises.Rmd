@@ -231,9 +231,9 @@ plot(divusa$military, divusa$divorce)
 
 LMR 3.6 - happy
 ```{r}
-#Install package faraway
+install.packages('faraway') #Install package faraway
 require(faraway)
-happy <- data(happy)
+data(happy) #run in console
 View(happy)
 
 pairs(~ happy + money + sex + love + work, data = happy) #Scatter plot
@@ -242,7 +242,86 @@ summary(happyFit)
 #Only love was significant at the 1% level.
 table(happy$happy)
 #results are not normally distributed,
+
+##Part C - test significance of money using permutation method
+
+lmod <- lm(happy ~ sex + money, data = happy)
+lms <- summary(lmod)
+tstats <- numeric(4000)
+set.seed(123)
+for (i in 1:4000) {
+  lmods <- lm(happy ~ sex + sample(money), data = happy)
+  tstats[i] <- summary(lmods)$coef[3, 3]
+}
+mean(abs(tstats) > abs(lms$coef[3]))
 ```
+
+
+LMR 4.5
+
+```{r}
+require(faraway)
+data(fat)
+
+fullFat <- lm(brozek ~ age + weight + height + neck + chest + abdom + hip +thigh + knee + ankle + biceps + forearm + wrist, data = fat)
+summary(fullFat)
+
+lowFat <- lm(brozek ~ age + weight + height + abdom, fat)
+summary(lowFat)
+#The observed adjusted r-squared is nearly the same, 71.7% vs 73.5%
+
+x <- model.matrix(fullFat)
+(x0 <- apply(x,2,median))
+(y0 <- sum(x0*coef(fullFat)))
+predict(fullFat, new = data.frame(t(x0)))
+predict(fullFat, new = data.frame(t(x0)), interval = "prediction")
+predict(fullFat, new = data.frame(t(x0)), interval = "confidence")
+
+#For full model, the prediction interval is (9.62, 25.37)
+
+xlow <- model.matrix(lowFat)
+(x1 <- apply(xlow,2,median))
+(y1 <- sum(x1*coef(lowFat)))
+predict(lowFat, new = data.frame(t(x1)))
+predict(lowFat, new = data.frame(t(x1)), interval = "prediction")
+predict(lowFat, new = data.frame(t(x1)), interval = "confidence")
+
+#The reduced model prediction interval is (9.70, 25.98) - so it's not too much bigger.
+
+
+#Part c - examine cases 25-50
+View(fat[25:50, ])
+lowFatData <- fat[25:50, c(1, 4, 5, 6, 11)]
+(residuals2550 <- abs(fat$brozek[25:50] - predict(lowFat, new = data.frame(xlow))[25:50])) #residuals = observed - predicted
+residuals2550[order(-residuals2550)]
+
+#observations 39 and 32 are the most anomalous
+
+
+lowFat <- lm(brozek ~ age + weight + height + abdom, fat[c(-32,-39),])
+summary(lowFat)
+xlow <- model.matrix(lowFat)
+(x1 <- apply(xlow,2,median))
+(y1 <- sum(x1*coef(lowFat)))
+predict(lowFat, new = data.frame(t(x1)))
+predict(lowFat, new = data.frame(t(x1)), interval = "prediction")
+predict(lowFat, new = data.frame(t(x1)), interval = "confidence")
+
+#new interval: 9.95, 25.88 - smaller, but not a lot smaller.
+
+
+(residuals <- abs(fat$brozek - predict(lowFat, new = data.frame(xlow))))
+residuals[order(-residuals)][1:10]
+
+fat[39,]
+x0
+```
+
+
+
+
+
+
 
 
 LMR 2.6
